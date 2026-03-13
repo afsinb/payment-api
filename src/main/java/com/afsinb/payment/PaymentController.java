@@ -26,4 +26,31 @@ public class PaymentController {
             "error_rate", paymentService.getErrorRate()
         );
     }
+
+    @GetMapping("/admin/anomalies")
+    public Map<String, Object> anomalyState() {
+        return paymentService.anomalyState();
+    }
+
+    @PostMapping("/admin/anomalies")
+    public Map<String, Object> configureAnomalies(
+            @RequestParam(required = false) Boolean nullCustomerFailureEnabled,
+            @RequestParam(required = false) Boolean divisionByZeroEnabled,
+            @RequestParam(required = false) Integer forcedFailures,
+            @RequestParam(required = false, defaultValue = "false") boolean clearErrors
+    ) {
+        if (nullCustomerFailureEnabled != null) {
+            paymentService.setNullCustomerFailureEnabled(nullCustomerFailureEnabled);
+        }
+        if (divisionByZeroEnabled != null) {
+            paymentService.setDivisionByZeroEnabled(divisionByZeroEnabled);
+        }
+        if (forcedFailures != null) {
+            paymentService.injectForcedFailures(forcedFailures);
+        }
+        if (clearErrors) {
+            paymentService.clearRecentErrors();
+        }
+        return paymentService.anomalyState();
+    }
 }

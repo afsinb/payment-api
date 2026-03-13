@@ -24,7 +24,6 @@ EXPOSE 8081
 VOLUME ["/app/logs"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD wget -qO- http://localhost:8081/actuator/health || exit 1
+  CMD wget -qO- http://localhost:8081/api/payments/health || exit 1
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
