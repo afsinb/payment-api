@@ -18,6 +18,7 @@ public class PaymentService {
     private volatile boolean nullCustomerFailureEnabled = false;
     private volatile boolean divisionByZeroEnabled = true;
     private volatile int forcedFailuresRemaining = 0;
+    private volatile int routingDriftFailuresRemaining = 0;
 
     private final List<String> recentErrors = new ArrayList<>();
 
@@ -29,6 +30,13 @@ public class PaymentService {
                 forcedFailuresRemaining--;
                 log.error("Forced payment failure injected by anomaly toggle. Remaining={}", forcedFailuresRemaining);
                 throw new IllegalStateException("Injected payment failure");
+            }
+
+            if (routingDriftFailuresRemaining > 0) {
+                routingDriftFailuresRemaining--;
+                log.error("Synthetic unknown anomaly triggered: PaymentRoutingDriftException. Remaining={}",
+                        routingDriftFailuresRemaining);
+                throw new PaymentRoutingDriftException("Payment routing table drift detected");
             }
 
             if (request.getCustomer() == null) {
@@ -91,6 +99,12 @@ public class PaymentService {
         log.warn("Forced payment failures scheduled: {}", this.forcedFailuresRemaining);
     }
 
+    public void injectRoutingDriftFailures(int count) {
+        this.routingDriftFailuresRemaining = Math.max(0, count);
+        log.warn("Unknown anomaly failures scheduled (PaymentRoutingDriftException): {}",
+                this.routingDriftFailuresRemaining);
+    }
+
     public void clearRecentErrors() {
         recentErrors.clear();
         log.info("Recent payment error history cleared");
@@ -101,7 +115,15 @@ public class PaymentService {
         state.put("null_customer_failure_enabled", nullCustomerFailureEnabled);
         state.put("division_by_zero_enabled", divisionByZeroEnabled);
         state.put("forced_failures_remaining", forcedFailuresRemaining);
+        state.put("routing_drift_failures_remaining", routingDriftFailuresRemaining);
         state.put("recent_errors", recentErrors.size());
         return state;
+    }
+
+    /** Custom unknown exception for UAC rule/recipe learning. */
+    static class PaymentRoutingDriftException extends RuntimeException {
+        PaymentRoutingDriftException(String message) {
+            super(message);
+        }
     }
 }

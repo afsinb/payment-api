@@ -39,6 +39,7 @@ public class PaymentController {
             @RequestParam(required = false) Boolean nullCustomerFailureEnabled,
             @RequestParam(required = false) Boolean divisionByZeroEnabled,
             @RequestParam(required = false) Integer forcedFailures,
+            @RequestParam(required = false) Integer routingDriftFailures,
             @RequestParam(required = false, defaultValue = "false") boolean clearErrors
     ) {
         if (nullCustomerFailureEnabled != null) {
@@ -49,6 +50,9 @@ public class PaymentController {
         }
         if (forcedFailures != null) {
             paymentService.injectForcedFailures(forcedFailures);
+        }
+        if (routingDriftFailures != null) {
+            paymentService.injectRoutingDriftFailures(routingDriftFailures);
         }
         if (clearErrors) {
             paymentService.clearRecentErrors();
