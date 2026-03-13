@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 @Service
 public class PaymentService {
 
-    private Map<String, Transaction> transactions = new HashMap<>();
     private List<String> recentErrors = new ArrayList<>();
 
     public Payment processPayment(PaymentRequest request) {
@@ -18,8 +17,8 @@ public class PaymentService {
 
             // INTENTIONAL BUG #1: NullPointerException if customer is null
             if (request.getCustomer() == null) {
-                log.error("Customer object is null");
-                throw new NullPointerException("Customer cannot be null");
+                log.warn("[UAC Fix] Customer is null – defaulting to prevent NullPointerException");
+                request.setCustomer("unknown_customer");
             }
 
             // INTENTIONAL BUG #2: Division by zero
