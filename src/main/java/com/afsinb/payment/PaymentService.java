@@ -14,17 +14,12 @@ import java.util.UUID;
 @Service
 public class PaymentService {
 
-<<<<<<< HEAD
-    private Map<String, Transaction> transactions = new HashMap<>();
-    private List<String> recentErrors = new ArrayList<>();
-=======
     // Dynamic anomaly toggles for live demos
     private volatile boolean nullCustomerFailureEnabled = true;
     private volatile boolean divisionByZeroEnabled = true;
     private volatile int forcedFailuresRemaining = 0;
 
     private final List<String> recentErrors = new ArrayList<>();
->>>>>>> dfb5942 (feat: add runtime anomaly controls for live UAC demos)
 
     public Payment processPayment(PaymentRequest request) {
         try {
@@ -37,17 +32,12 @@ public class PaymentService {
             }
 
             if (request.getCustomer() == null) {
-<<<<<<< HEAD
-                log.error("Customer object is null");
-                throw new NullPointerException("Customer cannot be null");
-=======
                 if (nullCustomerFailureEnabled) {
                     log.error("Customer object is null");
                     throw new NullPointerException("Customer cannot be null");
                 }
-                log.warn("[UAC Fix] Customer is null – defaulting to prevent NullPointerException");
+                log.warn("[UAC Fix] Customer is null - defaulting to prevent NullPointerException");
                 request.setCustomer("unknown_customer");
->>>>>>> dfb5942 (feat: add runtime anomaly controls for live UAC demos)
             }
 
             if (request.getExchangeRate() == 0) {
