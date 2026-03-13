@@ -15,7 +15,7 @@ import java.util.UUID;
 public class PaymentService {
 
     // Dynamic anomaly toggles for live demos
-    private volatile boolean nullCustomerFailureEnabled = true;
+    private volatile boolean nullCustomerFailureEnabled = false;
     private volatile boolean divisionByZeroEnabled = true;
     private volatile int forcedFailuresRemaining = 0;
 
