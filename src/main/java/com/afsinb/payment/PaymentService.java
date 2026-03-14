@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
@@ -20,10 +21,20 @@ public class PaymentService {
     private volatile int forcedFailuresRemaining = 0;
 
     private final List<String> recentErrors = new ArrayList<>();
+    private final Map<String, Payment> idempotencyCache = new ConcurrentHashMap<>();
 
     public Payment processPayment(PaymentRequest request) {
         try {
             log.info("Processing payment: amount={}, currency={}", request.getAmount(), request.getCurrency());
+
+            String idempotencyKey = request.getIdempotencyKey();
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                Payment cached = idempotencyCache.get(idempotencyKey);
+                if (cached != null) {
+                    log.info("Returning cached payment for idempotencyKey={}", idempotencyKey);
+                    return cached;
+                }
+            }
 
             if (forcedFailuresRemaining > 0) {
                 forcedFailuresRemaining--;
@@ -54,6 +65,10 @@ public class PaymentService {
             payment.setAmount(request.getAmount());
             payment.setStatus("SUCCESS");
             payment.setTimestamp(System.currentTimeMillis());
+
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyCache.putIfAbsent(idempotencyKey, payment);
+            }
 
             log.info("Payment processed successfully: id={}, amount={}", payment.getId(), payment.getAmount());
             return payment;
