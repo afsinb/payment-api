@@ -25,7 +25,10 @@ public class PaymentController {
             "status", "UP",
             "service", "payment-api",
             "errors", paymentService.getErrorCount(),
-            "error_rate", paymentService.getErrorRate()
+            "error_rate", paymentService.getErrorRate(),
+            "memory_mb", paymentService.getMemoryUsageMb(),
+            "cache_size", 0,
+            "leak_size", 0
         );
     }
 
@@ -39,6 +42,7 @@ public class PaymentController {
             @RequestParam(required = false) Boolean nullCustomerFailureEnabled,
             @RequestParam(required = false) Boolean divisionByZeroEnabled,
             @RequestParam(required = false) Integer forcedFailures,
+            @RequestParam(required = false) Boolean autoChaosEnabled,
             @RequestParam(required = false, defaultValue = "false") boolean clearErrors
     ) {
         if (nullCustomerFailureEnabled != null) {
@@ -49,6 +53,9 @@ public class PaymentController {
         }
         if (forcedFailures != null) {
             paymentService.injectForcedFailures(forcedFailures);
+        }
+        if (autoChaosEnabled != null) {
+            paymentService.setAutoChaosEnabled(autoChaosEnabled);
         }
         if (clearErrors) {
             paymentService.clearRecentErrors();
