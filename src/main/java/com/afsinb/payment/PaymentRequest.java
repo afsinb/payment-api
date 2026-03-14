@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PaymentRequest {
     private String customer;
+    private String idempotencyKey;
     private double amount;
     private String currency;
     private double exchangeRate;
