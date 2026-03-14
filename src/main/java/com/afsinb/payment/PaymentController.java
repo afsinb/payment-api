@@ -15,7 +15,14 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    public Payment processPayment(@RequestBody PaymentRequest request) {
+    public Payment processPayment(
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @RequestBody PaymentRequest request
+    ) {
+        if ((request.getIdempotencyKey() == null || request.getIdempotencyKey().isBlank())
+                && idempotencyKey != null && !idempotencyKey.isBlank()) {
+            request.setIdempotencyKey(idempotencyKey);
+        }
         return paymentService.processPayment(request);
     }
 
